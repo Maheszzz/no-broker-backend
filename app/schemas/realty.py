@@ -1,6 +1,6 @@
 from typing import List, Optional
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 from enum import Enum
 
 
@@ -33,7 +33,7 @@ class ListingType(str, Enum):
 class ContactBase(BaseModel):
     name_: str = Field(..., min_length=1, max_length=100, alias="name")
     phone: str = Field(..., min_length=10, max_length=15)
-    email: str = Field(..., min_length=5, max_length=150)
+    email: EmailStr = Field(..., min_length=5, max_length=150)
     message: str = Field(..., max_length=250)
     status: Optional[ContactStatus] = ContactStatus.new
 
@@ -45,7 +45,7 @@ class ContactCreate(ContactBase):
 class ContactUpdate(BaseModel):
     name_: Optional[str] = Field(None, min_length=1, max_length=100, alias="name")
     phone: Optional[str] = Field(None, min_length=10, max_length=15)
-    email: Optional[str] = Field(None, min_length=5, max_length=150)
+    email: Optional[EmailStr] = Field(None, min_length=5, max_length=150)
     message: Optional[str] = Field(None, max_length=250)
     status: Optional[ContactStatus] = None
 
@@ -57,6 +57,7 @@ class ContactResponse(ContactBase):
     
     class Config:
         from_attributes = True
+        populate_by_name = True
 
 
 # Property Image Schemas
