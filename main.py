@@ -1,24 +1,32 @@
-from fastapi import FastAPI
+"""FastAPI application for Realty API."""
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.moderation import moderation_router, limiter
-from app.api.realty import realty_router
-from app.api.auth import auth_router
 from fastapi.responses import JSONResponse
-from fastapi import Request
 from loguru import logger
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
-from slowapi import _rate_limit_exceeded_handler
+
+from app.api.realty import realty_router
 from app.middleware.monitoring import PrometheusMiddleware
 from app.monitoring.prometheus import metrics_router
 
-app = FastAPI(title="Content Moderation API")
+# Initialize rate limiter
+limiter = Limiter(key_func=get_remote_address)
+
+app = FastAPI(
+    title="Realty API",
+    description="API for managing property listings and contacts",
+    version="1.0.0"
+)
+
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Configure CORS for frontend connection
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # In production, replace with specific origins like ["http://localhost:3000"]
+    allow_origins=["http://localhost:3000"],  # In production, replace with specific origins
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -26,25 +34,41 @@ app.add_middleware(
 
 app.add_middleware(PrometheusMiddleware)
 
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    logger.error(f"Global exception: {exc}")
+    """Global exception handler for unhandled errors."""
+    logger.error(f"Unhandled exception: {exc}")
     return JSONResponse(
         status_code=500,
-        content={"detail": "Internal Server Error"}
+        content={
+            "error": "internal_server_error",
+            "message": "An unexpected error occurred"
+        }
     )
 
 
-@app.get("/")
+@app.get("/", tags=["Health"])
 async def root():
-    return {"message": "FastAPI with Prometheus Monitoring"}
+    """Health check endpoint."""
+    return {"status": "healthy", "service": "Realty API"}
 
-app.include_router(moderation_router, prefix="/api/v1")
+
+@app.get("/health", tags=["Health"])
+async def health_check():
+    """Detailed health check endpoint."""
+    return {
+        "status": "healthy",
+        "service": "Realty API",
+        "version": "1.0.0"
+    }
+
+
+# Include routers
 app.include_router(realty_router, prefix="/api/v1")
-app.include_router(auth_router, prefix="/api/v1")
- 
 app.include_router(metrics_router)
- 
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
