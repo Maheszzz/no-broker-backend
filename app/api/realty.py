@@ -5,7 +5,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from typing import List, Optional
 
 from app.configs.db_config import get_mysql_db
-from app.schemas.realty import (
+from app.dto.realty import (
     ContactCreate, ContactUpdate, ContactResponse,
     PropertyCreate, PropertyUpdate, PropertyResponse,
     PropertyImageCreate, PropertyImageUpdate, PropertyImageResponse,
