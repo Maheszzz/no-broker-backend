@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from app.configs.db_config import MySQLBase, get_mysql_db
-from main import app
+from app.main import app
 from app.models.user import User
 from app.core.security import get_password_hash
 

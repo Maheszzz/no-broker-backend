@@ -10,6 +10,16 @@ from slowapi.errors import RateLimitExceeded
 from app.api.realty import realty_router
 from app.middleware.monitoring import PrometheusMiddleware
 from app.monitoring.prometheus import metrics_router
+import os
+import logging
+
+logging.basicConfig(level=logging.INFO)
+
+logging.info("ENV=%s", os.getenv("ENV"))
+logging.info("DB_HOST=%s", os.getenv("DB_HOST"))
+logging.info("DB_PORT=%s", os.getenv("DB_PORT"))
+logging.info("DB_USER=%s", os.getenv("DB_USER"))
+logging.info("DB_NAME=%s", os.getenv("DB_NAME"))
 
 # Initialize rate limiter
 limiter = Limiter(key_func=get_remote_address)
